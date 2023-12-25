@@ -1,62 +1,59 @@
+let timer;
 let isRunning = false;
 let startTime;
-let elapsedMilliseconds = 0; 
-let lapCount = 1;
+let laps = [];
 
-function startPause() {
-    const startPauseButton = document.getElementById('startPause');
-    if (isRunning) {
-        isRunning = false;
-        startPauseButton.textContent = 'Start';
-        clearInterval(timer);
-    } else {
+function startStopwatch() {
+    if (!isRunning) {
         isRunning = true;
-        startPauseButton.textContent = 'Pause';
-        startTime = new Date().getTime() - elapsedMilliseconds;
-        timer = setInterval(updateDisplay, 100);
+        startTime = new Date().getTime();
+        timer = setInterval(updateDisplay, 1000);
+        document.getElementById('startBtn').textContent = 'Pause';
+    } else {
+        isRunning = false;
+        clearInterval(timer);
+        document.getElementById('startBtn').textContent = 'Resume';
     }
-}
-
-function lap() {
-    if (isRunning) {
-        const lapsContainer = document.getElementById('laps');
-        const lapTime = formatTime(elapsedMilliseconds);
-        const lapItem = document.createElement('li');
-        lapItem.textContent = `Lap ${lapCount++}: ${lapTime}`;
-        lapItem.classList.add('lap-item');
-        lapsContainer.appendChild(lapItem);
-    }
-}
-
-function reset() {
-    isRunning = false;
-    clearInterval(timer);
-    const startPauseButton = document.getElementById('startPause');
-    startPauseButton.textContent = 'Start';
-    elapsedMilliseconds = 0;
-    lapCount = 1;
-    updateDisplay();
-    document.getElementById('laps').innerHTML = '';
-    
 }
 
 function updateDisplay() {
-    const elapsedTime = new Date().getTime() - startTime;
-    elapsedMilliseconds = elapsedTime;
+    const currentTime = new Date().getTime();
+    const elapsedTime = currentTime - startTime;
     const formattedTime = formatTime(elapsedTime);
     document.getElementById('display').textContent = formattedTime;
 }
 
-function formatTime(milliseconds) {
-    const totalSeconds = Math.floor(milliseconds / 1000);
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-    const millisecondsPart = Math.floor((milliseconds % 1000) / 10);
-    return `${padNumber(minutes)}:${padNumber(seconds)}:${padNumber(millisecondsPart)}`;
+    function formatTime(time) {
+        const minutes = Math.floor(time / 60000);
+        const seconds = Math.floor((time % 60000) / 1000);
+        const milliseconds = Math.floor((time % 1000) / 10);
+        return (
+            String(minutes).padStart(2, '0') +
+            ':' +
+            String(seconds).padStart(2, '0') +
+            ':' +
+            String(milliseconds).padStart(2, '0')
+        );
+    }
+    
+
+function recordLap() {
+    const currentTime = new Date().getTime();
+    const elapsedTime = currentTime - startTime;
+    const formattedTime = formatTime(elapsedTime);
+    laps.push(formattedTime);
+
+    const lapsList = document.getElementById('laps');
+    const lapItem = document.createElement('li');
+    lapItem.textContent = `Lap ${laps.length}: ${formattedTime}`;
+    lapsList.appendChild(lapItem);
 }
 
-function padNumber(number) {
-    return number < 10 ? `0${number}` : `${number}`;
+function resetStopwatch() {
+    isRunning = false;
+    clearInterval(timer);
+    document.getElementById('display').textContent = '00:00:00';
+    document.getElementById('startBtn').textContent = 'Start';
+    laps = [];
+    document.getElementById('laps').innerHTML = '';
 }
-
-let timer;
